@@ -1,12 +1,16 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
+#from pandas.tseries import _converter
+#_converter.register()
+
 import numpy as np
 from pandas import Timestamp
 from pandas_datareader import data
 import matplotlib.dates as mpl_dates
 import matplotlib.ticker as mticker
-from mpl_finance import candlestick_ohlc
+#from mpl_finance import candlestick_ohlc
+from mplfinance.original_flavor import candlestick_ohlc
 from matplotlib import style
 import datetime as dt
 style.use('ggplot')
@@ -41,7 +45,7 @@ print(h_l)
 
 def graph_data(stock):
 
-	fig=plt.figure(figsize=(10,8),facecolor="#f0f0f0")
+	fig=plt.figure(figsize=(9,7),facecolor="#f0f0f0")
 	ax1=plt.subplot2grid((6,1),(0,0),rowspan=1,colspan=1)
 	plt.title(stock)
 	plt.ylabel("H-L")
@@ -53,7 +57,7 @@ def graph_data(stock):
 	plt.ylabel("MAVGs")
 	
 	start_date = '2020-09-01'
-	end_date = '2021-01-15'
+	end_date = '2021-01-20'
 
 
 	panel = data.DataReader(str(stock), 'yahoo',
@@ -66,8 +70,8 @@ def graph_data(stock):
 	print(panel.head(40))
 	
 	df = panel.iloc[-1:]
-	print(df['Close'])
-	print(df['Date'])
+	print('close at: ', df['Close'])
+	print('close date: ',df['Date'])
 	
 	
 	total =len(panel.index)
@@ -86,7 +90,8 @@ def graph_data(stock):
 	ohlc['Date'] = ohlc['Date'].apply(mpl_dates.date2num)
 	ohlc = ohlc.astype(float)
 	
-	panel['Date']=panel['Date'].astype('datetime64[ns]')
+	#panel['Date']=panel['Date'].astype('datetime64[ns]')
+	panel['Date'] = panel['Date'].apply(mpl_dates.date2num)
 	
 	candlestick_ohlc(ax2, ohlc.values, width=0.6,
 	colorup='green', colordown='red', alpha=0.8)
@@ -98,13 +103,13 @@ def graph_data(stock):
 	#for label in ax1.xaxis.get_ticklabels():
 	#	label.set_rotation(45)
 	
-	
+	"""
 	ax2.annotate("{:.2f}".format(panel['Close'][total-1]),
 	(panel['Date'][total-1].to_pydatetime(),
 	panel['Close'][total-1]),xytext=(
 	panel['Date'][total-1].to_pydatetime(),panel['Close'][total-1]))
 	
-	
+	"""
 	"""
 	ax2.annotate('Big news',
 	(panel['Date'][2].to_pydatetime(),panel['Close'][5]),
@@ -121,8 +126,9 @@ def graph_data(stock):
 	panel['Close'][1], "!!!",fontdict=font_dict)
 	"""
 	start2=len(ma2)
-	ax2v.plot([],[],color='#0079a3',alpha=0.4,label='Volume')
-	ax2v.fill_between(panel['Date'][-start2:],0,panel['Volume'][-start2:],
+	#ax2v.plot([],[],color='#0079a3',alpha=0.4,label='Volume')
+	ax2v.plot(panel['Date'].values[-start2:],panel['Volume'][-start2:],color='#0079a3',alpha=0.4,label='Volume')
+	ax2v.fill_between(panel['Date'].values[-start2:],0,panel['Volume'][-start2:],
 	facecolor="#0079a3",alpha=0.3)
 	#ax2v.axes.yaxis.set_ticklabels([])
 	ax2v.grid(False)
@@ -131,31 +137,37 @@ def graph_data(stock):
 	start=len(['Close'][MA1:])
 	start1=len(ma1)
 			
-	print(start1)
+	print(start1,'***')
 	print(start2)
 	print(len(panel['Date']),len(ma1))
 	print(len(panel['Date']),len(ma2))
-	ax3.plot(panel['Date'][-start2:],ma1[-start2:],linewidth=1,label=(str(MA1)+'MA'))
-	ax3.plot(panel['Date'][-start2:],ma2[-start2:],linewidth=1,label=(str(MA2)+'MA'))
-	ax3.fill_between(panel['Date'][-start2:],ma2[-start2:],
+	ax3.plot(panel['Date'].values[-start2:],ma1[-start2:],linewidth=1,label=(str(MA1)+'MA'))
+	ax3.plot(panel['Date'].values[-start2:],ma2[-start2:],linewidth=1,label=(str(MA2)+'MA'))
+	ax3.fill_between(panel['Date'].values[-start2:],ma2[-start2:],
 	ma1[-start2:],where=(ma1[-start2:]<ma2[-start2:]),
 	facecolor='r',edgecolor='r',alpha=0.5)
 
-	ax3.fill_between(panel['Date'][-start2:],ma2[-start2:],
+	ax3.fill_between(panel['Date'].values[-start2:],ma2[-start2:],
 	ma1[-start2:],where=(ma1[-start2:]>ma2[-start2:]),
 	facecolor='g',edgecolor='g',alpha=0.5)
 	ax3.yaxis.set_major_locator(mticker.MaxNLocator(nbins=5,prune=
 	'upper'))
 	
-	date_format = mpl_dates.DateFormatter('%d-%m-%Y')
-	ax1.xaxis.set_major_formatter(date_format)
-	ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
-	ax1.grid(True)
+	#date_format = mpl_dates.DateFormatter('%d-%m-%Y')
+	#ax1.xaxis.set_major_formatter(date_format)
+	#ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
+	#ax1.grid(True)
 
 	h_l=list(map(high_minus_low,panel['High'],panel['Low']))
 	ax1.yaxis.set_major_locator(mticker.MaxNLocator(nbins=5,prune=
 	'upper'))
-	ax1.plot(panel['Date'],h_l,label='H-L')
+	ax1.plot(panel['Date'].values,np.array(h_l),label='H-L')
+	#ax1.plot(mpl_dates.date2num(panel['Date'].values),np.array(h_l),label='H-L')
+
+	date_format = mpl_dates.DateFormatter('%m-%d-%Y')
+	ax1.xaxis.set_major_formatter(date_format)
+	ax1.xaxis.set_major_locator(mticker.MaxNLocator(10))
+	ax1.grid(True)
 
 	plt.setp(ax3.get_xticklabels(), rotation=45)
 	plt.setp(ax1.get_xticklabels(), visible=False)
