@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import pandas as pd
+pd.core.common.is_list_like = pd.api.types.is_list_like
 #from pandas.tseries import _converter
 #_converter.register()
 
@@ -56,7 +57,7 @@ def graph_data(stock):
 	ax3=plt.subplot2grid((6,1),(5,0),rowspan=1,colspan=1,sharex=ax1)
 	plt.ylabel("MAVGs")
 	
-	start_date = '2020-09-01'
+	start_date = '2020-05-01'
 	end_date = '2021-01-20'
 
 
@@ -192,8 +193,15 @@ def graph_data(stock):
 	leg.get_frame().set_alpha(0.4)
 	
 	
-	plt.show()
+	#plt.show()
+	pngname = 'images/'+stock
+	plt.savefig(pngname)
 	
-
-graph_data('TSLA')
+import json
+with open("stocks.json", "r") as read_file:
+    stocks = json.load(read_file)
+    print(stocks)
+    for stock in stocks['stocks']:
+        print(stock)
+        graph_data(stock)
 
