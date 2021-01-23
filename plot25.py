@@ -5,6 +5,8 @@ pd.core.common.is_list_like = pd.api.types.is_list_like
 #from pandas.tseries import _converter
 #_converter.register()
 
+import requests
+from bs4 import BeautifulSoup
 import numpy as np
 from pandas import Timestamp
 from pandas_datareader import data
@@ -17,6 +19,7 @@ import datetime as dt
 style.use('ggplot')
 #style.use('fivethirtyeight')
 #style.use('dark_background')
+
 
 MA1=5
 MA2=10
@@ -45,10 +48,14 @@ print(h_l)
 
 
 def graph_data(stock):
+    
+	stock_company = f"https://finance.yahoo.com/quote/{stock.lower()}"
+	soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
+	company_name = soup.h1.text.split('(')[0].strip()
 
 	fig=plt.figure(figsize=(9,7),facecolor="#f0f0f0")
 	ax1=plt.subplot2grid((6,1),(0,0),rowspan=1,colspan=1)
-	plt.title(stock)
+	plt.title(stock+' ( '+company_name+' )')
 	plt.ylabel("H-L")
 	ax2=plt.subplot2grid((6,1),(1,0),rowspan=4,colspan=1,sharex=ax1)
 	plt.ylabel("Price")
@@ -58,7 +65,7 @@ def graph_data(stock):
 	plt.ylabel("MAVGs")
 	
 	start_date = '2020-05-01'
-	end_date = '2021-01-20'
+	end_date = '2021-01-22'
 
 
 	panel = data.DataReader(str(stock), 'yahoo',
