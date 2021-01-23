@@ -1,29 +1,43 @@
 import yahoo_fin.stock_info as si
 
-import requests
 
 import requests
+import time
 from bs4 import BeautifulSoup
 import json
 from pprint import pprint
-
+import asyncio
 #tickers = ['BABA', 'AAPL', 'TSLA', 'FB', 'GOOG', 'TWTR', 'GM','CIDM']
 stockname = []
 import json
+
+async def printStockInfo(ticker):
+    stock_company = f"https://finance.yahoo.com/quote/{ticker.lower()}"
+    soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
+    name = soup.h1.text.split('(')[0].strip()
+    ticker_data_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?region=US&lang=en-US&includePrePost=false&interval=2m&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance"
+    ticker_data = json.loads(requests.get(ticker_data_url).text)
+    price = ticker_data['chart']['result'][0]['meta']['previousClose']
+    if name:
+        #stockname.append( [ticker, name, price] )
+        print([ticker, name, price])
+
+tasks = []
+event_loop = asyncio.get_event_loop()
+
 with open("stocks.json", "r") as read_file:
     tickers = json.load(read_file)
     #print(stocks)
+    #started = time.time()
     for ticker in tickers['stocks']:
-        stock_company = f"https://finance.yahoo.com/quote/{ticker.lower()}"
-        soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
-        name = soup.h1.text.split('(')[0].strip()
-        ticker_data_url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?region=US&lang=en-US&includePrePost=false&interval=2m&range=1d&corsDomain=finance.yahoo.com&.tsrc=finance"
-        ticker_data = json.loads(requests.get(ticker_data_url).text)
-        price = ticker_data['chart']['result'][0]['meta']['previousClose']
-        if name:
-            stockname.append( [ticker, name, price] )
-
-pprint(stockname, width=60)
+        tasks.append((printStockInfo(ticker)))
+    #elapsed = time.time()
+    #print("Time taken: ", elapsed-started)
+started = time.time()
+event_loop.run_until_complete(asyncio.wait(tasks))
+elapsed = time.time()
+print("Time taken: ", elapsed-started)    
+#pprint(stockname, width=60)
 
 #for ticker in tickers
 #    prices[ticker] = si.get_data(ticker)

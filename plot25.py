@@ -4,6 +4,7 @@ import pandas as pd
 pd.core.common.is_list_like = pd.api.types.is_list_like
 #from pandas.tseries import _converter
 #_converter.register()
+import asyncio
 
 import requests
 from bs4 import BeautifulSoup
@@ -16,6 +17,7 @@ import matplotlib.ticker as mticker
 from mplfinance.original_flavor import candlestick_ohlc
 from matplotlib import style
 import datetime as dt
+import time
 style.use('ggplot')
 #style.use('fivethirtyeight')
 #style.use('dark_background')
@@ -205,10 +207,16 @@ def graph_data(stock):
 	plt.savefig(pngname)
 	
 import json
+
 with open("stocks.json", "r") as read_file:
     stocks = json.load(read_file)
-    print(stocks)
+    #print(stocks)
+    started = time.time()
+#Time taken: : 6.34
     for stock in stocks['stocks']:
         print(stock)
         graph_data(stock)
+    elapsed = time.time()
+    print("Time taken: ", elapsed-started)
+	
 
