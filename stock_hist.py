@@ -11,7 +11,7 @@ import asyncio
 stockname = []
 import json
 
-async def printStockInfo(ticker):
+def printStockInfo(ticker):
     stock_company = f"https://finance.yahoo.com/quote/{ticker.lower()}"
     soup = BeautifulSoup(requests.get(stock_company).text, "html.parser")
     name = soup.h1.text.split('(')[0].strip()
@@ -22,24 +22,15 @@ async def printStockInfo(ticker):
         #stockname.append( [ticker, name, price] )
         print([ticker, name, price])
 
-tasks = []
-event_loop = asyncio.get_event_loop()
 
 with open("stocks.json", "r") as read_file:
     tickers = json.load(read_file)
     #print(stocks)
-    #started = time.time()
+    started = time.time()
     for ticker in tickers['stocks']:
-        tasks.append((printStockInfo(ticker)))
-    #elapsed = time.time()
-    #print("Time taken: ", elapsed-started)
-started = time.time()
-event_loop.run_until_complete(asyncio.wait(tasks))
-elapsed = time.time()
-print("Time taken: ", elapsed-started)    
-#pprint(stockname, width=60)
-
-#for ticker in tickers
+        printStockInfo(ticker)
+    elapsed = time.time()
+    print("Time taken: ", elapsed-started)
 #    prices[ticker] = si.get_data(ticker)
 
 #print(prices['AAPL'])

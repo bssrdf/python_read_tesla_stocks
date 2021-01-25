@@ -66,7 +66,7 @@ def graph_data(stock):
 	ax3=plt.subplot2grid((6,1),(5,0),rowspan=1,colspan=1,sharex=ax1)
 	plt.ylabel("MAVGs")
 	
-	start_date = '2020-05-01'
+	start_date = '2019-05-01'
 	end_date = '2021-01-22'
 
 
